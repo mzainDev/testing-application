@@ -9,11 +9,14 @@ import {
     ActivityIndicator,
     StyleSheet,
     Alert,
+    Dimensions,
     ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
 
+const { width } = Dimensions.get("window");
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RoomBooking = () => {
@@ -44,7 +47,6 @@ const RoomBooking = () => {
 
     const fetchMeetingRooms = async () => {
         const accessToken = await AsyncStorage.getItem("accessToken");
-        
 
         try {
             const response = await fetch(`${BASE_URL}/admin/meetingRooms`, {
@@ -132,6 +134,7 @@ const RoomBooking = () => {
         }
     };
 
+    // Loading
     if (fetchingRooms) {
         return (
             <View style={styles.center}>
@@ -141,10 +144,11 @@ const RoomBooking = () => {
         );
     }
 
+    // Empty
     if (rooms.length === 0) {
         return (
             <View style={styles.center}>
-                <MaterialIcons name="hotel" size={64} color="gray" />
+                <MaterialIcons name="meeting-room" size={64} color="#9CA3AF" />
                 <Text style={styles.noRooms}>No rooms available</Text>
                 <TouchableOpacity onPress={fetchMeetingRooms} style={styles.retryBtn}>
                     <Text style={styles.retryText}>Retry</Text>
@@ -153,10 +157,16 @@ const RoomBooking = () => {
         );
     }
 
+    // Main UI
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Meeting Room Booking</Text>
+        <ScrollView style={styles.container}>
+            {/* Header */}
+            <LinearGradient colors={["#4F46E5", "#6366F1"]} style={styles.header}>
+                <Text style={styles.headerTitle}>Book a Meeting Room</Text>
+                <Text style={styles.headerSubtitle}>Choose your ideal workspace</Text>
+            </LinearGradient>
 
+            {/* Room List */}
             <FlatList
                 data={rooms}
                 keyExtractor={(item) => item.id.toString()}
@@ -168,9 +178,13 @@ const RoomBooking = () => {
                             style={styles.card}
                             onPress={() => handleRoomSelect(item)}
                         >
-                            <MaterialIcons name="meeting-room" size={48} color="#4F46E5" />
-                            <Text style={styles.roomName}>{item.name}</Text>
-                            <Text style={styles.roomDesc}>{item.description}</Text>
+                            <View style={styles.cardHeader}>
+                                <MaterialIcons name="meeting-room" size={42} color="#4F46E5" />
+                                <View style={{ flex: 1, marginLeft: 10 }}>
+                                    <Text style={styles.roomName}>{item.name}</Text>
+                                    <Text style={styles.roomDesc}>{item.description}</Text>
+                                </View>
+                            </View>
                             <Text style={styles.price}>SAR {item.price}</Text>
                             <View style={styles.amenities}>
                                 {amenities.map((icon, idx) => (
@@ -178,7 +192,7 @@ const RoomBooking = () => {
                                         key={idx}
                                         name={icon}
                                         size={16}
-                                        color="#4F46E5"
+                                        color="#6366F1"
                                         style={styles.icon}
                                     />
                                 ))}
@@ -193,18 +207,17 @@ const RoomBooking = () => {
                 <View style={styles.overlay}>
                     <View style={styles.formCard}>
                         <Text style={styles.formTitle}>Complete Your Booking</Text>
-
                         {["name", "email", "phone", "company"].map((field) => (
                             <TextInput
                                 key={field}
-                                placeholder={`Enter ${field}`}
                                 value={bookingData[field]}
                                 onChangeText={(text) => handleInputChange(field, text)}
                                 style={styles.input}
+                                placeholderTextColor="#888"
+                                placeholder={field === "company" ? "Company (Optional)" : field === "phone" ? "+923456789012" : `Enter ${field}`}
                                 keyboardType={field === "phone" ? "phone-pad" : "default"}
                             />
                         ))}
-
                         <View style={styles.formActions}>
                             <TouchableOpacity
                                 onPress={() => setShowBookingForm(false)}
@@ -212,7 +225,6 @@ const RoomBooking = () => {
                             >
                                 <Text style={styles.cancelText}>Cancel</Text>
                             </TouchableOpacity>
-
                             <TouchableOpacity
                                 onPress={handleBookingSubmit}
                                 style={[styles.btn, styles.submitBtn]}
@@ -235,76 +247,124 @@ const RoomBooking = () => {
                             </>
                         ) : (
                             <>
-                                <Ionicons name="checkmark-circle" size={72} color="green" />
+                                <Ionicons name="checkmark-circle" size={80} color="#22C55E" />
                                 <Text style={styles.dialogText}>Payment Link Sent!</Text>
                                 <TouchableOpacity
                                     onPress={() => setOpenDialog(false)}
-                                    style={styles.submitBtn}
+                                    style={[styles.btn, styles.submitBtn, { marginTop: 12 }]}
                                 >
-                                    <Text style={styles.submitText}>Got it!</Text>
+                                    <Text style={styles.submitText}>Got it</Text>
                                 </TouchableOpacity>
                             </>
                         )}
                     </View>
                 </View>
             </Modal>
-        </View>
+        </ScrollView>
     );
 };
 
 export default RoomBooking;
 
+// --- STYLES ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#EEF2FF", padding: 16 },
-    title: { fontSize: 24, fontWeight: "bold", color: "#1E1E1E", marginBottom: 12 },
-    list: { paddingBottom: 100 },
+    container: { flex: 1, backgroundColor: "#F9FAFB" },
+    header: {
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+    },
+    headerTitle: {
+        color: "#FFF",
+        fontSize: 26,
+        fontWeight: "700",
+    },
+    headerSubtitle: {
+        color: "#E0E7FF",
+        fontSize: 14,
+        marginTop: 6,
+    },
+    list: { padding: 16, paddingBottom: 120 },
     card: {
         backgroundColor: "#FFF",
-        padding: 16,
         borderRadius: 16,
-        marginBottom: 12,
-        elevation: 2,
+        padding: 16,
+        marginBottom: 14,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    roomName: { fontSize: 18, fontWeight: "bold", color: "#111" },
-    roomDesc: { fontSize: 14, color: "gray", marginVertical: 4 },
-    price: { fontSize: 16, color: "#4F46E5", fontWeight: "bold", marginTop: 6 },
+    cardHeader: { flexDirection: "row", alignItems: "center" },
+    roomName: { fontSize: 18, fontWeight: "600", color: "#111827" },
+    roomDesc: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+    price: {
+        fontSize: 16,
+        color: "#4F46E5",
+        fontWeight: "bold",
+        marginTop: 8,
+    },
     amenities: { flexDirection: "row", marginTop: 8 },
-    icon: { marginRight: 10 },
+    icon: { marginRight: 12 },
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0.4)",
         justifyContent: "center",
+        alignItems: "center",
         padding: 20,
     },
     formCard: {
-        backgroundColor: "#FFF",
-        borderRadius: 12,
-        padding: 16,
-    },
-    formTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 12 },
-    input: {
-        borderWidth: 1,
-        borderColor: "#CCC",
-        borderRadius: 8,
-        padding: 10,
-        marginBottom: 8,
-    },
-    formActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-    btn: { flex: 1, padding: 10, borderRadius: 8, alignItems: "center", marginHorizontal: 4 },
-    cancelBtn: { backgroundColor: "#EEE" },
-    submitBtn: { backgroundColor: "#4F46E5" },
-    cancelText: { color: "#333", fontWeight: "bold" },
-    submitText: { color: "#FFF", fontWeight: "bold" },
-    dialog: {
+        width: width * 0.9,
         backgroundColor: "#FFF",
         borderRadius: 16,
         padding: 20,
-        alignItems: "center",
+        elevation: 5,
     },
-    dialogText: { fontSize: 16, color: "#333", marginTop: 12 },
+    formTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: "#111827",
+        marginBottom: 16,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: "#D1D5DB",
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 10,
+        fontSize: 15,
+        color: "#111827",
+    },
+    formActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
+    btn: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: "center",
+        marginHorizontal: 5,
+    },
+    cancelBtn: { backgroundColor: "#E5E7EB" },
+    submitBtn: { backgroundColor: "#4F46E5" },
+    cancelText: { color: "#374151", fontWeight: "bold" },
+    submitText: { color: "#FFF", fontWeight: "bold" },
+    dialog: {
+        backgroundColor: "#FFF",
+        borderRadius: 20,
+        padding: 24,
+        alignItems: "center",
+        width: width * 0.8,
+    },
+    dialogText: { fontSize: 16, color: "#374151", marginTop: 12 },
     center: { flex: 1, justifyContent: "center", alignItems: "center" },
-    loadingText: { marginTop: 10, color: "#666" },
-    noRooms: { fontSize: 18, color: "#666", marginVertical: 8 },
-    retryBtn: { backgroundColor: "#4F46E5", padding: 10, borderRadius: 8 },
+    loadingText: { marginTop: 10, color: "#6B7280" },
+    noRooms: { fontSize: 18, color: "#6B7280", marginVertical: 8 },
+    retryBtn: {
+        backgroundColor: "#4F46E5",
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 8,
+    },
     retryText: { color: "#FFF", fontWeight: "bold" },
 });
