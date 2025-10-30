@@ -288,6 +288,7 @@ const styles = StyleSheet.create({
     },
     loginButton: {
         marginVertical: SIZES.medium,
+
     },
     dividerContainer: {
         flexDirection: "row",

@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "new-project",
-    "slug": "new-project",
+    "name": "Meeting Room Booking",
+    "slug": "meeting-room-booking",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "newproject",
+    "scheme": "meetingroombooking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.bookmeetingroom",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -23,7 +25,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/rawdhat.png"
     },
     "plugins": [
       "expo-router",
@@ -43,6 +45,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ac14dff3-deeb-4aee-b748-f9d2bc137c78"
+      }
+    },
+    "owner": "mzaindev02"
   }
 }

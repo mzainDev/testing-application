@@ -1,20 +1,21 @@
+import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
-    View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    FlatList,
+    Modal,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    FlatList,
-    Modal,
-    ActivityIndicator,
-    StyleSheet,
-    Alert,
-    Dimensions,
-    ScrollView,
+    View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { COLORS, FONTS, SHADOWS, SIZES } from "../theme/theme";
 
 const { width } = Dimensions.get("window");
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -80,7 +81,7 @@ const RoomBooking = () => {
 
     const handleBookingSubmit = async () => {
         if (!bookingData.name || !bookingData.email || !bookingData.phone) {
-            Alert.alert("Missing info", "Please fill in all required fields.");
+            Alert.alert("Missing Information", "Please fill in all required fields.");
             return;
         }
 
@@ -113,258 +114,700 @@ const RoomBooking = () => {
             } else {
                 setTimeout(() => {
                     setLoading(false);
-                    Alert.alert("Booking failed");
+                    Alert.alert("Booking Failed", "Unable to process your booking. Please try again.");
                 }, 2000);
             }
         } catch (error) {
             setTimeout(() => {
                 setLoading(false);
-                Alert.alert("Error", "Failed to create booking");
+                Alert.alert("Error", "Failed to create booking. Please check your connection.");
             }, 2000);
         }
     };
 
     const getAmenities = (price) => {
         if (price >= 200) {
-            return ["wifi", "tv", "coffee", "car"];
+            return [
+                { icon: "wifi", label: "High-Speed WiFi" },
+                { icon: "tv", label: "Smart Display" },
+                { icon: "coffee", label: "Refreshments" },
+                { icon: "car", label: "Parking" }
+            ];
         } else if (price >= 150) {
-            return ["wifi", "tv", "coffee"];
+            return [
+                { icon: "wifi", label: "WiFi" },
+                { icon: "tv", label: "Display" },
+                { icon: "coffee", label: "Coffee" }
+            ];
         } else {
-            return ["wifi", "tv"];
+            return [
+                { icon: "wifi", label: "WiFi" },
+                { icon: "tv", label: "Display" }
+            ];
         }
     };
 
-    // Loading
+    // Loading State
     if (fetchingRooms) {
         return (
-            <View style={styles.center}>
-                <ActivityIndicator size="large" color="#4F46E5" />
-                <Text style={styles.loadingText}>Loading meeting rooms...</Text>
+            <View style={styles.centerContainer}>
+                <View style={styles.loadingCard}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Loading meeting rooms...</Text>
+                    <Text style={styles.loadingSubtext}>Please wait a moment</Text>
+                </View>
             </View>
         );
     }
 
-    // Empty
+    // Empty State
     if (rooms.length === 0) {
         return (
-            <View style={styles.center}>
-                <MaterialIcons name="meeting-room" size={64} color="#9CA3AF" />
-                <Text style={styles.noRooms}>No rooms available</Text>
-                <TouchableOpacity onPress={fetchMeetingRooms} style={styles.retryBtn}>
-                    <Text style={styles.retryText}>Retry</Text>
-                </TouchableOpacity>
+            <View style={styles.centerContainer}>
+                <View style={styles.emptyStateCard}>
+                    <View style={styles.emptyIconContainer}>
+                        <MaterialIcons name="meeting-room" size={72} color={COLORS.primary} />
+                    </View>
+                    <Text style={styles.emptyTitle}>No Rooms Available</Text>
+                    <Text style={styles.emptySubtext}>
+                        There are currently no meeting rooms to display
+                    </Text>
+                    <TouchableOpacity onPress={fetchMeetingRooms} style={styles.retryButton}>
+                        <Ionicons name="refresh" size={20} color="#FFF" />
+                        <Text style={styles.retryText}>Refresh</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         );
     }
 
     // Main UI
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             {/* Header */}
-            <LinearGradient colors={["#4F46E5", "#6366F1"]} style={styles.header}>
-                <Text style={styles.headerTitle}>Book a Meeting Room</Text>
-                <Text style={styles.headerSubtitle}>Choose your ideal workspace</Text>
+            <LinearGradient
+                colors={[COLORS.gradientStart, COLORS.gradientMiddle, COLORS.gradientEnd]}
+                style={styles.header}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            >
+                <View style={styles.headerContent}>
+                    <View>
+                        <Text style={styles.headerTitle}>Meeting Rooms</Text>
+                        <Text style={styles.headerSubtitle}>
+                            Book your perfect workspace
+                        </Text>
+                    </View>
+                    <View style={styles.headerBadge}>
+                        <Text style={styles.headerBadgeText}>{rooms.length} Available</Text>
+                    </View>
+                </View>
             </LinearGradient>
 
             {/* Room List */}
             <FlatList
                 data={rooms}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => {
                     const amenities = getAmenities(item.price);
                     return (
-                        <TouchableOpacity
-                            style={styles.card}
-                            onPress={() => handleRoomSelect(item)}
-                        >
-                            <View style={styles.cardHeader}>
-                                <MaterialIcons name="meeting-room" size={42} color="#4F46E5" />
-                                <View style={{ flex: 1, marginLeft: 10 }}>
+                        <View style={styles.roomCard}>
+                            {/* Room Header */}
+                            <View style={styles.roomHeader}>
+                                <View style={styles.roomIconContainer}>
+                                    <MaterialIcons name="meeting-room" size={32} color={COLORS.primary} />
+                                </View>
+                                <View style={styles.roomInfo}>
                                     <Text style={styles.roomName}>{item.name}</Text>
-                                    <Text style={styles.roomDesc}>{item.description}</Text>
+                                    <Text style={styles.roomDescription} numberOfLines={2}>
+                                        {item.description}
+                                    </Text>
                                 </View>
                             </View>
-                            <Text style={styles.price}>SAR {item.price}</Text>
-                            <View style={styles.amenities}>
-                                {amenities.map((icon, idx) => (
-                                    <FontAwesome5
-                                        key={idx}
-                                        name={icon}
-                                        size={16}
-                                        color="#6366F1"
-                                        style={styles.icon}
-                                    />
-                                ))}
+
+                            {/* Price Badge */}
+                            <View style={styles.priceBadge}>
+                                <Text style={styles.priceLabel}>Starting from</Text>
+                                <View style={styles.priceRow}>
+                                    <Text style={styles.priceAmount}>SAR {item.price}</Text>
+                                    <Text style={styles.pricePeriod}>/session</Text>
+                                </View>
                             </View>
-                        </TouchableOpacity>
+
+                            {/* Amenities */}
+                            <View style={styles.amenitiesSection}>
+                                <Text style={styles.amenitiesTitle}>Amenities</Text>
+                                <View style={styles.amenitiesGrid}>
+                                    {amenities.map((amenity, idx) => (
+                                        <View key={idx} style={styles.amenityItem}>
+                                            <View style={styles.amenityIcon}>
+                                                <FontAwesome5
+                                                    name={amenity.icon}
+                                                    size={14}
+                                                    color={COLORS.primary}
+                                                />
+                                            </View>
+                                            <Text style={styles.amenityLabel}>{amenity.label}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
+
+                            {/* Book Button */}
+                            <TouchableOpacity
+                                style={styles.bookButton}
+                                onPress={() => handleRoomSelect(item)}
+                                activeOpacity={0.8}
+                            >
+                                <LinearGradient
+                                    colors={[COLORS.primary, COLORS.gradientMiddle]}
+                                    style={styles.bookButtonGradient}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                >
+                                    <Text style={styles.bookButtonText}>Book Now</Text>
+                                    <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
                     );
                 }}
             />
 
             {/* Booking Form Modal */}
             <Modal visible={showBookingForm} transparent animationType="slide">
-                <View style={styles.overlay}>
-                    <View style={styles.formCard}>
-                        <Text style={styles.formTitle}>Complete Your Booking</Text>
-                        {["name", "email", "phone", "company"].map((field) => (
-                            <TextInput
-                                key={field}
-                                value={bookingData[field]}
-                                onChangeText={(text) => handleInputChange(field, text)}
-                                style={styles.input}
-                                placeholderTextColor="#888"
-                                placeholder={field === "company" ? "Company (Optional)" : field === "phone" ? "+923456789012" : `Enter ${field}`}
-                                keyboardType={field === "phone" ? "phone-pad" : "default"}
-                            />
-                        ))}
-                        <View style={styles.formActions}>
-                            <TouchableOpacity
-                                onPress={() => setShowBookingForm(false)}
-                                style={[styles.btn, styles.cancelBtn]}
-                            >
-                                <Text style={styles.cancelText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleBookingSubmit}
-                                style={[styles.btn, styles.submitBtn]}
-                            >
-                                <Text style={styles.submitText}>Proceed</Text>
-                            </TouchableOpacity>
-                        </View>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <ScrollView
+                            style={styles.formScrollView}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {/* Form Header */}
+                            <View style={styles.formHeader}>
+                                <View>
+                                    <Text style={styles.formTitle}>Complete your Booking</Text>
+                                    <Text style={styles.formSubtitle}>
+                                        {selectedRoom?.name}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setShowBookingForm(false)}
+                                    style={styles.closeButton}
+                                >
+                                    <Ionicons name="close" size={24} color={COLORS.text} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Form Fields */}
+                            <View style={styles.formContent}>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Full Name *</Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="person-outline" size={20} color={COLORS.subtext} />
+                                        <TextInput
+                                            value={bookingData.name}
+                                            onChangeText={(text) => handleInputChange("name", text)}
+                                            style={styles.input}
+                                            placeholder="Enter your full name"
+                                            placeholderTextColor={COLORS.subtext}
+                                        />
+                                    </View>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Email Address *</Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="mail-outline" size={20} color={COLORS.subtext} />
+                                        <TextInput
+                                            value={bookingData.email}
+                                            onChangeText={(text) => handleInputChange("email", text)}
+                                            style={styles.input}
+                                            placeholder="your.email@example.com"
+                                            placeholderTextColor={COLORS.subtext}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </View>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Phone Number *</Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="call-outline" size={20} color={COLORS.subtext} />
+                                        <TextInput
+                                            value={bookingData.phone}
+                                            onChangeText={(text) => handleInputChange("phone", text)}
+                                            style={styles.input}
+                                            placeholder="+923456789012"
+                                            placeholderTextColor={COLORS.subtext}
+                                            keyboardType="phone-pad"
+                                        />
+                                    </View>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Company Name</Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="business-outline" size={20} color={COLORS.subtext} />
+                                        <TextInput
+                                            value={bookingData.company}
+                                            onChangeText={(text) => handleInputChange("company", text)}
+                                            style={styles.input}
+                                            placeholder="Your Company (Optional)"
+                                            placeholderTextColor={COLORS.subtext}
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Form Actions */}
+                            <View style={styles.formActions}>
+                                <TouchableOpacity
+                                    onPress={() => setShowBookingForm(false)}
+                                    style={styles.cancelButton}
+                                >
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleBookingSubmit}
+                                    style={styles.submitButton}
+                                >
+                                    <LinearGradient
+                                        colors={[COLORS.primary, COLORS.gradientMiddle]}
+                                        style={styles.submitButtonGradient}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                    >
+                                        <Text style={styles.submitButtonText}>Proceed to Payment</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
 
-            {/* Payment Modal */}
+            {/* Payment Processing Modal */}
             <Modal visible={openDialog} transparent animationType="fade">
-                <View style={styles.overlay}>
-                    <View style={styles.dialog}>
+                <View style={styles.dialogOverlay}>
+                    <View style={styles.dialogContainer}>
                         {loading ? (
                             <>
-                                <ActivityIndicator size="large" color="#4F46E5" />
-                                <Text style={styles.dialogText}>Processing payment...</Text>
+                                <View style={styles.loadingSpinnerContainer}>
+                                    <ActivityIndicator size="large" color={COLORS.primary} />
+                                </View>
+                                <Text style={styles.dialogTitle}>Processing Payment</Text>
+                                <Text style={styles.dialogSubtext}>
+                                    Please wait while we generate your payment link
+                                </Text>
                             </>
                         ) : (
                             <>
-                                <Ionicons name="checkmark-circle" size={80} color="#22C55E" />
-                                <Text style={styles.dialogText}>Payment Link Sent!</Text>
+                                <View style={styles.successIconContainer}>
+                                    <Ionicons name="checkmark-circle" size={80} color={COLORS.success} />
+                                </View>
+                                <Text style={styles.dialogTitle}>Payment Link Sent!</Text>
+                                <Text style={styles.dialogSubtext}>
+                                    Check your WhatsApp for the payment link
+                                </Text>
                                 <TouchableOpacity
                                     onPress={() => setOpenDialog(false)}
-                                    style={[styles.btn, styles.submitBtn, { marginTop: 12 }]}
+                                    style={styles.dialogButton}
                                 >
-                                    <Text style={styles.submitText}>Got it</Text>
+                                    <Text style={styles.dialogButtonText}>Got it</Text>
                                 </TouchableOpacity>
                             </>
                         )}
                     </View>
                 </View>
             </Modal>
-        </ScrollView>
+        </View>
     );
 };
 
 export default RoomBooking;
 
-// --- STYLES ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F9FAFB" },
-    header: {
-        paddingVertical: 40,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-    },
-    headerTitle: {
-        color: "#FFF",
-        fontSize: 26,
-        fontWeight: "700",
-    },
-    headerSubtitle: {
-        color: "#E0E7FF",
-        fontSize: 14,
-        marginTop: 6,
-    },
-    list: { padding: 16, paddingBottom: 120 },
-    card: {
-        backgroundColor: "#FFF",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 14,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    cardHeader: { flexDirection: "row", alignItems: "center" },
-    roomName: { fontSize: 18, fontWeight: "600", color: "#111827" },
-    roomDesc: { fontSize: 13, color: "#6B7280", marginTop: 2 },
-    price: {
-        fontSize: 16,
-        color: "#4F46E5",
-        fontWeight: "bold",
-        marginTop: 8,
-    },
-    amenities: { flexDirection: "row", marginTop: 8 },
-    icon: { marginRight: 12 },
-    overlay: {
+    container: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.4)",
+        backgroundColor: COLORS.background,
+    },
+    centerContainer: {
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 20,
+        backgroundColor: COLORS.background,
+        padding: SIZES.spacing.xl,
     },
-    formCard: {
-        width: width * 0.9,
-        backgroundColor: "#FFF",
-        borderRadius: 16,
-        padding: 20,
-        elevation: 5,
+
+    header: {
+        paddingTop: 60,
+        paddingBottom: 32,
+        paddingHorizontal: SIZES.spacing.lg,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        ...SHADOWS.medium,
+    },
+    headerContent: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+    },
+    headerTitle: {
+        ...FONTS.heading1,
+        color: "#FFFFFF",
+        marginBottom: 4,
+    },
+    headerSubtitle: {
+        ...FONTS.body,
+        color: "rgba(255, 255, 255, 0.85)",
+    },
+    headerBadge: {
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: SIZES.radius.pill,
+        backdropFilter: "blur(10px)",
+    },
+    headerBadgeText: {
+        ...FONTS.caption,
+        color: "#FFFFFF",
+        fontWeight: "600",
+    },
+
+    // Loading State
+    loadingCard: {
+        backgroundColor: COLORS.card,
+        borderRadius: SIZES.radius.lg,
+        padding: SIZES.spacing.xxl,
+        alignItems: "center",
+        ...SHADOWS.card,
+    },
+    loadingText: {
+        ...FONTS.subtitle,
+        color: COLORS.text,
+        marginTop: SIZES.spacing.md,
+    },
+    loadingSubtext: {
+        ...FONTS.caption,
+        color: COLORS.subtext,
+        marginTop: SIZES.spacing.xs,
+    },
+
+    // Empty State
+    emptyStateCard: {
+        backgroundColor: COLORS.card,
+        borderRadius: SIZES.radius.lg,
+        padding: SIZES.spacing.xxl,
+        alignItems: "center",
+        maxWidth: 320,
+        ...SHADOWS.card,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        backgroundColor: `${COLORS.primary}15`,
+        borderRadius: 60,
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: SIZES.spacing.lg,
+    },
+    emptyTitle: {
+        ...FONTS.heading2,
+        color: COLORS.text,
+        marginBottom: SIZES.spacing.sm,
+    },
+    emptySubtext: {
+        ...FONTS.body,
+        color: COLORS.subtext,
+        textAlign: "center",
+        marginBottom: SIZES.spacing.lg,
+    },
+    retryButton: {
+        flexDirection: "row",
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: SIZES.spacing.lg,
+        paddingVertical: SIZES.spacing.md,
+        borderRadius: SIZES.radius.md,
+        alignItems: "center",
+        gap: SIZES.spacing.sm,
+        ...SHADOWS.small,
+    },
+    retryText: {
+        ...FONTS.button,
+        color: "#FFFFFF",
+    },
+
+    // Room List
+    listContent: {
+        padding: SIZES.spacing.lg,
+        paddingBottom: 120,
+    },
+    roomCard: {
+        backgroundColor: COLORS.card,
+        borderRadius: SIZES.radius.lg,
+        padding: SIZES.spacing.lg,
+        marginBottom: SIZES.spacing.md,
+        ...SHADOWS.card,
+    },
+    roomHeader: {
+        flexDirection: "row",
+        marginBottom: SIZES.spacing.md,
+    },
+    roomIconContainer: {
+        width: 56,
+        height: 56,
+        backgroundColor: `${COLORS.primary}10`,
+        borderRadius: SIZES.radius.md,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: SIZES.spacing.md,
+    },
+    roomInfo: {
+        flex: 1,
+    },
+    roomName: {
+        ...FONTS.heading3,
+        color: COLORS.text,
+        marginBottom: 4,
+    },
+    roomDescription: {
+        ...FONTS.body,
+        color: COLORS.subtext,
+    },
+    priceBadge: {
+        backgroundColor: `${COLORS.primary}08`,
+        borderRadius: SIZES.radius.md,
+        padding: SIZES.spacing.md,
+        marginBottom: SIZES.spacing.md,
+        borderWidth: 1,
+        borderColor: `${COLORS.primary}20`,
+    },
+    priceLabel: {
+        ...FONTS.caption,
+        color: COLORS.subtext,
+        marginBottom: 2,
+    },
+    priceRow: {
+        flexDirection: "row",
+        alignItems: "baseline",
+    },
+    priceAmount: {
+        ...FONTS.heading2,
+        color: COLORS.primary,
+        marginRight: 4,
+    },
+    pricePeriod: {
+        ...FONTS.caption,
+        color: COLORS.subtext,
+    },
+    amenitiesSection: {
+        marginBottom: SIZES.spacing.md,
+    },
+    amenitiesTitle: {
+        ...FONTS.button,
+        color: COLORS.text,
+        marginBottom: SIZES.spacing.sm,
+    },
+    amenitiesGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: SIZES.spacing.sm,
+    },
+    amenityItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: COLORS.background,
+        paddingHorizontal: SIZES.spacing.md,
+        paddingVertical: SIZES.spacing.sm,
+        borderRadius: SIZES.radius.sm,
+        gap: SIZES.spacing.sm,
+    },
+    amenityIcon: {
+        width: 28,
+        height: 28,
+        backgroundColor: `${COLORS.primary}10`,
+        borderRadius: 14,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    amenityLabel: {
+        ...FONTS.caption,
+        color: COLORS.text,
+        fontWeight: "500",
+    },
+    bookButton: {
+        borderRadius: SIZES.radius.md,
+        overflow: "hidden",
+        ...SHADOWS.small,
+    },
+    bookButtonGradient: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: SIZES.spacing.md,
+        gap: SIZES.spacing.sm,
+    },
+    bookButtonText: {
+        ...FONTS.button,
+        color: "#FFFFFF",
+    },
+
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContainer: {
+        backgroundColor: COLORS.card,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        maxHeight: "90%",
+        ...SHADOWS.float,
+    },
+    formScrollView: {
+        maxHeight: "100%",
+    },
+    formHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        padding: SIZES.spacing.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
     },
     formTitle: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: "#111827",
-        marginBottom: 16,
+        ...FONTS.heading2,
+        color: COLORS.text,
+        marginBottom: 4,
+    },
+    formSubtitle: {
+        ...FONTS.body,
+        color: COLORS.subtext,
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: COLORS.background,
+        borderRadius: 20,
+    },
+    formContent: {
+        padding: SIZES.spacing.lg,
+    },
+    inputGroup: {
+        marginBottom: SIZES.spacing.md,
+
+    },
+    inputLabel: {
+        ...FONTS.button,
+        color: COLORS.text,
+        marginBottom: SIZES.spacing.sm,
+    },
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: COLORS.background,
+        borderRadius: SIZES.radius.md,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        paddingHorizontal: SIZES.spacing.md,
+        height: 56,
     },
     input: {
-        borderWidth: 1,
-        borderColor: "#D1D5DB",
-        borderRadius: 10,
-        padding: 12,
-        marginBottom: 10,
-        fontSize: 15,
-        color: "#111827",
-    },
-    formActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-    btn: {
         flex: 1,
-        paddingVertical: 10,
-        borderRadius: 10,
-        alignItems: "center",
-        marginHorizontal: 5,
-    },
-    cancelBtn: { backgroundColor: "#E5E7EB" },
-    submitBtn: { backgroundColor: "#4F46E5" },
-    cancelText: { color: "#374151", fontWeight: "bold" },
-    submitText: { color: "#FFF", fontWeight: "bold" },
-    dialog: {
-        backgroundColor: "#FFF",
-        borderRadius: 20,
-        padding: 24,
-        alignItems: "center",
-        width: width * 0.8,
-    },
-    dialogText: { fontSize: 16, color: "#374151", marginTop: 12 },
-    center: { flex: 1, justifyContent: "center", alignItems: "center" },
-    loadingText: { marginTop: 10, color: "#6B7280" },
-    noRooms: { fontSize: 18, color: "#6B7280", marginVertical: 8 },
-    retryBtn: {
-        backgroundColor: "#4F46E5",
+        ...FONTS.body,
+        color: COLORS.text,
+        marginLeft: SIZES.spacing.sm,
         padding: 10,
-        borderRadius: 8,
-        marginTop: 8,
     },
-    retryText: { color: "#FFF", fontWeight: "bold" },
+    formActions: {
+        flexDirection: "row",
+        padding: SIZES.spacing.lg,
+        gap: SIZES.spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.border,
+    },
+    cancelButton: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+        borderRadius: SIZES.radius.md,
+        paddingVertical: SIZES.spacing.md,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+    cancelButtonText: {
+        ...FONTS.button,
+        color: COLORS.text,
+    },
+    submitButton: {
+        flex: 1,
+        borderRadius: SIZES.radius.md,
+        overflow: "hidden",
+        ...SHADOWS.small,
+    },
+    submitButtonGradient: {
+        paddingVertical: SIZES.spacing.md,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    submitButtonText: {
+        ...FONTS.button,
+        color: "#FFFFFF",
+    },
+
+    // Dialog Styles
+    dialogOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: SIZES.spacing.lg,
+    },
+    dialogContainer: {
+        backgroundColor: COLORS.card,
+        borderRadius: SIZES.radius.xl,
+        padding: SIZES.spacing.xxl,
+        alignItems: "center",
+        width: width * 0.85,
+        maxWidth: 400,
+        ...SHADOWS.float,
+    },
+    loadingSpinnerContainer: {
+        marginBottom: SIZES.spacing.lg,
+    },
+    successIconContainer: {
+        marginBottom: SIZES.spacing.lg,
+    },
+    dialogTitle: {
+        ...FONTS.heading2,
+        color: COLORS.text,
+        marginBottom: SIZES.spacing.sm,
+        textAlign: "center",
+    },
+    dialogSubtext: {
+        ...FONTS.body,
+        color: COLORS.subtext,
+        textAlign: "center",
+        marginBottom: SIZES.spacing.lg,
+    },
+    dialogButton: {
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: SIZES.spacing.xl,
+        paddingVertical: SIZES.spacing.md,
+        borderRadius: SIZES.radius.md,
+        minWidth: 120,
+        ...SHADOWS.small,
+    },
+    dialogButtonText: {
+        ...FONTS.button,
+        color: "#FFFFFF",
+        textAlign: "center",
+    },
 });
