@@ -30,6 +30,7 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const authenticate = async (data) => {
@@ -170,16 +171,25 @@ export default function LoginScreen() {
                                 mode="outlined"
                                 value={password}
                                 onChangeText={setPassword}
-                                secureTextEntry
+                                secureTextEntry={!showPassword}
                                 left={<TextInput.Icon icon={() => (
                                     <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} />
                                 )} />}
+                                right={
+                                    <TextInput.Icon
+                                        icon={() => (
+                                            <Ionicons
+                                                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                                size={20}
+                                                color={COLORS.primary}
+                                            />
+                                        )}
+                                        onPress={() => setShowPassword(!showPassword)}
+                                    />
+                                }
                                 error={!!errors.password}
                                 style={{ marginBottom: 10 }}
                             />
-                            {errors.password && (
-                                <Text style={{ color: "red", fontSize: 12 }}>{errors.password}</Text>
-                            )}
 
                             <TouchableOpacity style={styles.forgotPasswordContainer}>
                                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>

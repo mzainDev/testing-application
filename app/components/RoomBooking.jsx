@@ -1,6 +1,7 @@
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -21,6 +22,7 @@ const { width } = Dimensions.get("window");
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RoomBooking = () => {
+    const router = useRouter();
     const [rooms, setRooms] = useState([]);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -125,6 +127,47 @@ const RoomBooking = () => {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem("accessToken");
+            await AsyncStorage.removeItem("userData");
+            router.replace("/login");
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
+    };
+
+    // const handleLogout = async () => {
+    //     Alert.alert(
+    //         "Logout",
+    //         "Are you sure you want to logout?",
+    //         [
+    //             {
+    //                 text: "Cancel",
+    //                 style: "cancel",
+    //             },
+    //             {
+    //                 text: "Logout",
+    //                 style: "destructive",
+    //                 onPress: async () => {
+    //                     try {
+    //                         // Clear all stored data
+    //                         await AsyncStorage.removeItem("accessToken");
+    //                         await AsyncStorage.removeItem("userData");
+
+    //                         // Redirect to login
+    //                         router.replace("/login");
+    //                     } catch (error) {
+    //                         console.error("Error during logout:", error);
+    //                         Alert.alert("Error", "Failed to logout. Please try again.");
+    //                     }
+    //                 },
+    //             },
+    //         ],
+    //         { cancelable: true }
+    //     );
+    // };
+
     const getAmenities = (price) => {
         if (price >= 200) {
             return [
@@ -192,14 +235,23 @@ const RoomBooking = () => {
                 end={{ x: 1, y: 1 }}
             >
                 <View style={styles.headerContent}>
-                    <View>
+                    <View style={styles.headerTextContainer}>
                         <Text style={styles.headerTitle}>Meeting Rooms</Text>
                         <Text style={styles.headerSubtitle}>
                             Book your perfect workspace
                         </Text>
                     </View>
-                    <View style={styles.headerBadge}>
-                        <Text style={styles.headerBadgeText}>{rooms.length} Available</Text>
+                    <View style={styles.headerActions}>
+                        <View style={styles.headerBadge}>
+                            <Text style={styles.headerBadgeText}>{rooms.length} Available</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.logoutButton}
+                            onPress={handleLogout}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="log-out-outline" size={22} color="#FFFFFF" />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </LinearGradient>
@@ -455,6 +507,10 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "flex-start",
     },
+    headerTextContainer: {
+        flex: 1,
+        marginRight: SIZES.spacing.md,
+    },
     headerTitle: {
         ...FONTS.heading1,
         color: "#FFFFFF",
@@ -463,6 +519,11 @@ const styles = StyleSheet.create({
     headerSubtitle: {
         ...FONTS.body,
         color: "rgba(255, 255, 255, 0.85)",
+    },
+    headerActions: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: SIZES.spacing.sm,
     },
     headerBadge: {
         backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -475,6 +536,15 @@ const styles = StyleSheet.create({
         ...FONTS.caption,
         color: "#FFFFFF",
         fontWeight: "600",
+    },
+    logoutButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        borderRadius: 20,
+        justifyContent: "center",
+        alignItems: "center",
+        backdropFilter: "blur(10px)",
     },
 
     // Loading State
