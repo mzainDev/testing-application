@@ -8,7 +8,9 @@ import {
     Alert,
     Dimensions,
     FlatList,
+    KeyboardAvoidingView,
     Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -330,115 +332,139 @@ const RoomBooking = () => {
 
             {/* Booking Form Modal */}
             <Modal visible={showBookingForm} transparent animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <ScrollView
-                            style={styles.formScrollView}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            {/* Form Header */}
-                            <View style={styles.formHeader}>
-                                <View>
-                                    <Text style={styles.formTitle}>Complete your Booking</Text>
-                                    <Text style={styles.formSubtitle}>
-                                        {selectedRoom?.name}
-                                    </Text>
-                                </View>
-                                <TouchableOpacity
-                                    onPress={() => setShowBookingForm(false)}
-                                    style={styles.closeButton}
-                                >
-                                    <Ionicons name="close" size={24} color={COLORS.text} />
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Form Fields */}
-                            <View style={styles.formContent}>
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Full Name *</Text>
-                                    <View style={styles.inputContainer}>
-                                        <Ionicons name="person-outline" size={20} color={COLORS.subtext} />
-                                        <TextInput
-                                            value={bookingData.name}
-                                            onChangeText={(text) => handleInputChange("name", text)}
-                                            style={styles.input}
-                                            placeholder="Enter your full name"
-                                            placeholderTextColor={COLORS.subtext}
-                                        />
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "android" ? "padding" : "height"}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContainer}>
+                            <ScrollView
+                                style={styles.formScrollView}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                {/* Form Header */}
+                                <View style={styles.formHeader}>
+                                    <View>
+                                        <Text style={styles.formTitle}>Complete your Booking</Text>
+                                        <Text style={styles.formSubtitle}>
+                                            {selectedRoom?.name}
+                                        </Text>
                                     </View>
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Email Address *</Text>
-                                    <View style={styles.inputContainer}>
-                                        <Ionicons name="mail-outline" size={20} color={COLORS.subtext} />
-                                        <TextInput
-                                            value={bookingData.email}
-                                            onChangeText={(text) => handleInputChange("email", text)}
-                                            style={styles.input}
-                                            placeholder="your.email@example.com"
-                                            placeholderTextColor={COLORS.subtext}
-                                            keyboardType="email-address"
-                                            autoCapitalize="none"
-                                        />
-                                    </View>
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Phone Number *</Text>
-                                    <View style={styles.inputContainer}>
-                                        <Ionicons name="call-outline" size={20} color={COLORS.subtext} />
-                                        <TextInput
-                                            value={bookingData.phone}
-                                            onChangeText={(text) => handleInputChange("phone", text)}
-                                            style={styles.input}
-                                            placeholder="+923456789012"
-                                            placeholderTextColor={COLORS.subtext}
-                                            keyboardType="phone-pad"
-                                        />
-                                    </View>
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Company Name</Text>
-                                    <View style={styles.inputContainer}>
-                                        <Ionicons name="business-outline" size={20} color={COLORS.subtext} />
-                                        <TextInput
-                                            value={bookingData.company}
-                                            onChangeText={(text) => handleInputChange("company", text)}
-                                            style={styles.input}
-                                            placeholder="Your Company (Optional)"
-                                            placeholderTextColor={COLORS.subtext}
-                                        />
-                                    </View>
-                                </View>
-                            </View>
-
-                            {/* Form Actions */}
-                            <View style={styles.formActions}>
-                                <TouchableOpacity
-                                    onPress={() => setShowBookingForm(false)}
-                                    style={styles.cancelButton}
-                                >
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={handleBookingSubmit}
-                                    style={styles.submitButton}
-                                >
-                                    <LinearGradient
-                                        colors={[COLORS.primary, COLORS.gradientMiddle]}
-                                        style={styles.submitButtonGradient}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 0 }}
+                                    <TouchableOpacity
+                                        onPress={() => setShowBookingForm(false)}
+                                        style={styles.closeButton}
                                     >
-                                        <Text style={styles.submitButtonText}>Proceed to Payment</Text>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
+                                        <Ionicons name="close" size={24} color={COLORS.text} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Form Fields */}
+                                <View style={styles.formContent}>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Full Name *</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="person-outline" size={20} color={COLORS.subtext} />
+                                            <TextInput
+                                                value={bookingData.name}
+                                                onChangeText={(text) => handleInputChange("name", text)}
+                                                style={styles.input}
+                                                placeholder="Enter your full name"
+                                                placeholderTextColor={COLORS.subtext}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Email Address *</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="mail-outline" size={20} color={COLORS.subtext} />
+                                            <TextInput
+                                                value={bookingData.email}
+                                                onChangeText={(text) => handleInputChange("email", text)}
+                                                style={styles.input}
+                                                placeholder="your.email@example.com"
+                                                placeholderTextColor={COLORS.subtext}
+                                                keyboardType="email-address"
+                                                autoCapitalize="none"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Phone Number *</Text>
+                                        <View style={styles.phoneContainer}>
+                                            <View style={styles.countryCodeBox}>
+                                                <Text style={styles.countryCodeText}>SA</Text>
+                                                <Text style={styles.countryCode}>+966</Text>
+                                            </View>
+
+                                            <TextInput
+                                                value={bookingData.phone}
+                                                onChangeText={(text) => {
+                                                    // Keep only digits
+                                                    const cleanText = text.replace(/[^0-9]/g, '');
+
+                                                    // Only allow input that starts with '5' or is empty (to allow clearing)
+                                                    if (cleanText === '' || cleanText.startsWith('5')) {
+                                                        handleInputChange("phone", cleanText.slice(0, 9)); // limit to 9 digits
+                                                    }
+                                                }}
+                                                onEndEditing={() => {
+                                                    // Validate once the user finishes typing
+                                                    if (!/^5\d{8}$/.test(bookingData.phone)) {
+                                                        Alert.alert("Invalid Phone", "Please enter a valid Saudi phone number starting with 5 and 9 digits long.");
+                                                    }
+                                                }}
+                                                style={styles.phoneInput}
+                                                placeholder="5xxxxxxxx"
+                                                placeholderTextColor={COLORS.subtext}
+                                                keyboardType="phone-pad"
+                                            />
+                                        </View>
+                                    </View>
+
+
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Company Name</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="business-outline" size={20} color={COLORS.subtext} />
+                                            <TextInput
+                                                value={bookingData.company}
+                                                onChangeText={(text) => handleInputChange("company", text)}
+                                                style={styles.input}
+                                                placeholder="Your Company (Optional)"
+                                                placeholderTextColor={COLORS.subtext}
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+
+                                {/* Form Actions */}
+                                <View style={styles.formActions}>
+                                    <TouchableOpacity
+                                        onPress={() => setShowBookingForm(false)}
+                                        style={styles.cancelButton}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={handleBookingSubmit}
+                                        style={styles.submitButton}
+                                    >
+                                        <LinearGradient
+                                            colors={[COLORS.primary, COLORS.gradientMiddle]}
+                                            style={styles.submitButtonGradient}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                        >
+                                            <Text style={styles.submitButtonText}>Proceed to Payment</Text>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </View>
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* Payment Processing Modal */}
@@ -475,7 +501,7 @@ const RoomBooking = () => {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </View >
     );
 };
 
@@ -704,9 +730,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     amenityLabel: {
-        ...FONTS.caption,
+        // ...FONTS.caption,
         color: COLORS.text,
         fontWeight: "500",
+        fontSize: 10,
     },
     bookButton: {
         borderRadius: SIZES.radius.md,
@@ -879,5 +906,45 @@ const styles = StyleSheet.create({
         ...FONTS.button,
         color: "#FFFFFF",
         textAlign: "center",
+    },
+    phoneContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: COLORS.background,
+        borderRadius: SIZES.radius.md,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        height: 56,
+        overflow: "hidden",
+    },
+
+    countryCodeBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F5F7FA",
+        paddingHorizontal: 12,
+        borderRightWidth: 1,
+        borderRightColor: COLORS.border,
+    },
+
+    countryCodeText: {
+        fontSize: 14,
+        color: COLORS.text,
+        fontWeight: "600",
+        marginRight: 6,
+    },
+
+    countryCode: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: COLORS.text,
+    },
+
+    phoneInput: {
+        flex: 1,
+        paddingHorizontal: 12,
+        fontSize: 16,
+        color: COLORS.text,
+        padding: 8,
     },
 });
